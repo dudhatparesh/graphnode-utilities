@@ -1,0 +1,80 @@
+version: '3'
+services:
+  query-node:
+    image: graphprotocol/graph-node
+    container_name: query-node
+    restart: always
+    ports:
+      - '8000:8000'
+    extra_hosts:
+      - 172.18.0.1:host-gateway
+    depends_on:
+      - postgres
+    environment:
+      EXPERIMENTAL_SUBGRAPH_VERSION_SWITCHING_MODE: synced
+        #GRAPH_KILL_IF_UNRESPONSIVE: 'true'
+      GRAPH_LOG: trace
+      RUST_BACKTRACE: full
+      postgres_host: postgres
+      postgres_user: graph-node
+      postgres_pass: let-me-in #Make sure to change it
+      postgres_db: graph-node
+      node_role: query-node
+      node_id: query-node
+      ipfs: 'https://api.thegraph.com/ipfs/'
+      ethereum: 'mainnet:<Your RPC URL>'
+  index-node:
+    image: graphprotocol/graph-node
+    container_name: index-node
+    restart: always
+    ports:
+      - '8001:8001'
+        #- '8020:8020' #Uncomment while you want to deploy subgraph
+      - '8030:8030'
+      - '8040:8040'
+    depends_on:
+      - postgres
+    extra_hosts:
+      - 172.18.0.1:host-gateway
+    environment:
+      BLOCK_INGESTOR: index-node
+        #GRAPH_KILL_IF_UNRESPONSIVE: 'true'
+      GRAPH_LOG: info
+      GRAPH_ENTITY_CACHE_SIZE: 8000000
+      ETHEREUM_POLLING_INTERVAL: 250
+      ETHEREUM_TRACE_STREAM_STEP_SIZE: 500
+      ETHEREUM_RPC_MAX_PARALLEL_REQUESTS: 64
+      ETHEREUM_BLOCK_BATCH_SIZE: 128
+      GRAPH_ETHEREUM_MAX_BLOCK_RANGE_SIZE: 5000
+      GRAPH_ETHEREUM_TARGET_TRIGGERS_PER_BLOCK_RANGE: 88
+      GRAPH_ETHEREUM_JSON_RPC_TIMEOUT: 60
+      node_role: index-node
+      node_id: index-node
+      postgres_host: postgres
+      postgres_user: graph-node
+      postgres_pass: let-me-in #Make sure to change it
+      postgres_db: graph-node
+      ipfs: 'https://api.thegraph.com/ipfs/'
+      ethereum: 'mainnet:<Your RPC URL>'
+      ETHEREUM_REORG_THRESHOLD: 1 #1 where there is a centralized sequencer
+      FIREHOSE_PRIORITY: 'true'
+      GRAPH_ALLOW_NON_DETERMINISTIC_FULLTEXT_SEARCH: 'true'
+  postgres:
+    container_name: postgres
+      #restart: always
+    image: postgres
+      #ports:
+      #- '5432:5432'  #Uncomment if you want to access it outside container
+    command:
+      [
+        "postgres",
+        "-cshared_preload_libraries=pg_stat_statements"
+      ]
+    environment:
+      POSTGRES_USER: graph-node
+      POSTGRES_PASSWORD: let-me-in # Make Sure to change it later on
+      POSTGRES_DB: graph-node
+      PGDATA: "/var/lib/postgresql/data"
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=C"
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
