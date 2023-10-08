@@ -7,3 +7,4 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docke
 sudo apt update
 apt-cache policy docker-ce
 sudo apt install docker-ce docker-compose jq -y
+sudo apt install certbot python3-certbot-nginx nginx -y #optional nginx installation with letsencrypt certbot and nginx plugin
