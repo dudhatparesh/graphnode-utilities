@@ -1,3 +1,4 @@
+[Unit]
 Description=Graph Node Service
 After=network.target
 StartLimitIntervalSec=0
@@ -9,3 +10,6 @@ Restart=always
 RestartSec=5
 User=root
 
+
+[Install]
+WantedBy=multi-user.target
