@@ -1,0 +1,11 @@
+Description=Graph Node Service
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+ExecStart=/bin/bash /var/docker/graphnode.sh
+Type=simple
+Restart=always
+RestartSec=5
+User=root
+
